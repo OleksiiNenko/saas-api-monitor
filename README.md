@@ -1,6 +1,6 @@
 # SaaS API Monitor
 
-[![CI](https://github.com/skif71/saas-api-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/skif71/saas-api-monitor/actions/workflows/ci.yml)
+[![CI](https://github.com/OleksiiNenko/saas-api-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/OleksiiNenko/saas-api-monitor/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A small Laravel service for monitoring the availability of HTTP/API endpoints.
