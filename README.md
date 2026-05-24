@@ -1,59 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SaaS API Monitor
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![CI](https://github.com/skif71/saas-api-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/skif71/saas-api-monitor/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## About Laravel
+A small Laravel service for monitoring the availability of HTTP/API endpoints.
+You register **monitors** (a URL, the HTTP method, the expected status code and a
+check interval) and the service keeps track of them. This first milestone ships
+the monitor management API; background health checks and a dashboard are planned
+next.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **PHP 8.3** / **Laravel 12**
+- **SQLite** by default (any Laravel-supported DB works)
+- **Vite 7 + Tailwind 4** for the frontend
+- Tests: **PHPUnit** (backend) and **Vitest** (frontend)
+- Code style: **Laravel Pint** (a PHP-CS-Fixer wrapper)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+- PHP 8.3+ with `pdo_sqlite`
+- Composer
+- Node.js 20.19+ (or 22.12+) and npm
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Getting started
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer setup       # install deps, create .env, key:generate, migrate, build assets
+composer dev         # serve + queue + logs + vite (all-in-one dev runner)
+```
 
-## Laravel Sponsors
+Or step by step:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm install && npm run build
+php artisan serve
+```
 
-### Premium Partners
+## API
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Base prefix: `/api`. No authentication yet (planned for a later milestone).
+
+| Method   | Endpoint              | Description                  |
+|----------|-----------------------|------------------------------|
+| `GET`    | `/api/monitors`       | List monitors (paginated)    |
+| `POST`   | `/api/monitors`       | Create a monitor             |
+| `GET`    | `/api/monitors/{id}`  | Show a single monitor        |
+| `PATCH`  | `/api/monitors/{id}`  | Update a monitor             |
+| `DELETE` | `/api/monitors/{id}`  | Delete a monitor (204)       |
+
+### Monitor fields
+
+| Field              | Type    | Rules / default                              |
+|--------------------|---------|----------------------------------------------|
+| `name`             | string  | required, max 255                            |
+| `url`              | string  | required, valid URL, max 2048                |
+| `method`           | string  | one of GET/HEAD/POST/PUT/PATCH/DELETE (`GET`)|
+| `expected_status`  | int     | 100–599 (`200`)                              |
+| `interval_seconds` | int     | min 30 (`300`)                               |
+| `is_active`        | bool    | (`true`)                                     |
+
+### Example
+
+```bash
+curl -X POST http://localhost:8000/api/monitors \
+  -H 'Accept: application/json' \
+  -d 'name=Checkout API&url=https://api.example.com/health&interval_seconds=60'
+```
+
+## Testing & quality
+
+```bash
+composer test            # PHPUnit
+vendor/bin/pint --test   # PHP code style check (PHP-CS-Fixer under the hood)
+npm run test             # Vitest (frontend)
+npm run build            # ensure assets compile
+```
+
+These same checks run in CI on every pull request — see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[MIT](LICENSE)
